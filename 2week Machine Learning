@@ -1,0 +1,65 @@
+import os
+os.environ['KAGGLE_USERNAME'] = 'jeonghunnpark' # username
+os.environ['KAGGLE_KEY'] = '2203e3787677b8a759c0d61ec3d4ab15' # key
+!kaggle datasets download -d kandij/diabetes-dataset
+!unzip diabetes-dataset.zip
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam, SGD
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt 
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+df = pd.read_csv('diabetes2.csv')
+df.head(5)
+
+df = pd.read_csv('diabetes2.csv', usecols=[
+  'Pregnancies', #임신
+  'Glucose', #포도당
+  'BloodPressure', #혈압
+  'SkinThickness', #피부두께
+  'Insulin', #인슐린
+  'BMI', #체질량지수
+  'DiabetesPedigreeFunction', #당뇨병 가계기능
+  'Age', #나이
+  'Outcome' #결과
+  ])
+df.head(5)
+
+sns.countplot(x='Pregnancies', hue='Outcome', data=df)
+
+sns.countplot(x=df['Outcome'])
+
+print(df.isnull().sum())
+
+x_data = df.drop(columns=['Outcome'], axis=1)
+x_data = x_data.astype(np.float32)
+x_data.head(5)
+
+y_data = df[['Outcome']]
+y_data = y_data.astype(np.float32)
+y_data.head(5)
+
+scaler = StandardScaler()
+x_data_scaled = scaler.fit_transform(x_data)
+print(x_data.values[0])
+print(x_data_scaled[0])
+
+x_train, x_val, y_train, y_val = train_test_split(x_data, y_data, test_size=0.2, random_state=2021)
+print(x_train.shape, x_val.shape)
+print(y_train.shape, y_val.shape)
+
+model = Sequential([
+  Dense(1, activation='sigmoid')
+])
+model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.01), metrics=['acc'])
+model.fit(
+    x_train,
+    y_train,
+    validation_data=(x_val, y_val),
+    epochs=20
+)
