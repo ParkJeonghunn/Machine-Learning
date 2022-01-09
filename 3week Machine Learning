@@ -1,0 +1,66 @@
+import os
+os.environ['KAGGLE_USERNAME'] = 'jeonghunnpark' # username
+os.environ['KAGGLE_KEY'] = '2203e3787677b8a759c0d61ec3d4ab15' # key
+
+!kaggle datasets download -d oddrationale/mnist-in-csv
+!unzip mnist-in-csv.zip
+
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Dense
+from tensorflow.keras.optimizers import Adam, SGD
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder
+
+train_df = pd.read_csv('mnist_train.csv')
+train_df.head()
+
+test_df = pd.read_csv('mnist_test.csv')
+test_df.head()
+
+plt.figure(figsize=(16,10))
+sns.countplot(train_df['label'])
+plt.show()
+
+train_df = train_df.astype(np.float32)
+x_train = train_df.drop(columns=['label'], axis=1).values
+y_train = train_df[['label']].values
+
+test_df= test_df.astype(np.float32)
+x_test = test_df.drop(columns=['label'], axis=1).values
+y_test = test_df[['label']].values
+
+print(x_train.shape, y_train.shape)
+print(x_test.shape, y_test.shape)
+
+index = 1
+plt.title(str(y_train[index]))
+plt.imshow(x_train[index].reshape((28, 28)), cmap='gray')
+plt.show()
+
+encoder = OneHotEncoder()
+y_train = encoder.fit_transform(y_train).toarray()
+y_test = encoder.fit_transform(y_test).toarray()
+print(y_train.shape)
+
+x_train = x_train / 255.
+x_test = x_test / 255.
+
+history = model.fit(
+    x_train,
+    y_train,
+    validation_data=(x_test, y_test),
+    epochs=20
+)
+
+plt.figure(figsize=(16, 10))
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+
+plt.figure(figsize=(16, 10))
+plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
